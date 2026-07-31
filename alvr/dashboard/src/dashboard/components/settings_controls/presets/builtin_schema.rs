@@ -29,6 +29,22 @@ fn bool_modifier(target_path: &str, value: bool) -> PresetModifier {
     }
 }
 
+// Array fields (`[f32; 3]` etc.) are stored in the settings schema as a collapsible wrapper
+// struct `{ gui_collapsed: bool, content: [T; N] }` (see the `SchemaNode::Array` handling in
+// alvr_session::extrapolate_session_settings_from_session_settings). Assigning a bare JSON
+// array to the field fails deserialization: the array elements get mapped onto the wrapper's
+// fields in order, so the first element lands on the `gui_collapsed` bool ("invalid type:
+// floating point `0.0`, expected a boolean"). Assign the full wrapper object instead.
+fn num_array_modifier(target_path: &str, values: &[f32]) -> PresetModifier {
+    PresetModifier {
+        target_path: target_path.into(),
+        operation: PresetModifierOperation::Assign(serde_json::json!({
+            "gui_collapsed": false,
+            "content": values,
+        })),
+    }
+}
+
 pub fn resolution_schema() -> PresetSchemaNode {
     PresetSchemaNode::HigherOrderChoice(HigherOrderChoiceSchema {
         name: "Resolution".into(),
@@ -512,32 +528,27 @@ pub fn yvr_preset_schema() -> PresetSchemaNode {
         .map(|(display_name, headset_emulation, controller_emulation)| {
             HigherOrderChoiceOption {
                 display_name: display_name.into(),
-                modifiers: vec![
-                    string_modifier(
-                        "session_settings.headset.emulation_mode.variant",
-                        headset_emulation,
-                    ),
-                    string_modifier(
-                        "session_settings.headset.controllers.content.emulation_mode.variant",
-                        controller_emulation,
-                    ),
-                    PresetModifier {
-                        target_path:
-                            "session_settings.headset.controllers.content.left_controller_position_offset"
-                                .into(),
-                        operation: PresetModifierOperation::Assign(serde_json::json!([
-                            0.0, 0.0, 0.0
-                        ])),
-                    },
-                    PresetModifier {
-                        target_path:
-                            "session_settings.headset.controllers.content.left_controller_rotation_offset"
-                                .into(),
-                        operation: PresetModifierOperation::Assign(serde_json::json!([
-                            25.0, 0.0, 0.0
-                        ])),
-                    },
-                ],
+                modifiers: {
+                    let mut modifiers = vec![
+                        string_modifier(
+                            "session_settings.headset.emulation_mode.variant",
+                            headset_emulation,
+                        ),
+                        string_modifier(
+                            "session_settings.headset.controllers.content.emulation_mode.variant",
+                            controller_emulation,
+                        ),
+                    ];
+                    modifiers.push(num_array_modifier(
+                        "session_settings.headset.controllers.content.left_controller_position_offset",
+                        &[0.0, 0.0, 0.0],
+                    ));
+                    modifiers.push(num_array_modifier(
+                        "session_settings.headset.controllers.content.left_controller_rotation_offset",
+                        &[25.0, 0.0, 0.0],
+                    ));
+                    modifiers
+                },
                 content: None,
             }
         })
