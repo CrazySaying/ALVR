@@ -1,5 +1,5 @@
 use alvr_common::{LogEntry, LogSeverity};
-use alvr_gui_common::theme::{self, log_colors};
+use alvr_gui_common::{theme::{self, log_colors}, tr, tr_fmt};
 use alvr_session::Settings;
 use eframe::{
     egui::{self, Frame, Label, Layout, Panel, RichText, TextWrapMode, Ui},
@@ -52,7 +52,7 @@ pub struct NotificationBar {
     current_level: LogSeverity,
     receive_instant: Instant,
     min_notification_level: LogSeverity,
-    tip_message: Option<String>,
+    tip_index: Option<usize>,
     expanded: bool,
 }
 
@@ -63,7 +63,7 @@ impl NotificationBar {
             current_level: LogSeverity::Debug,
             receive_instant: Instant::now(),
             min_notification_level: LogSeverity::Debug,
-            tip_message: None,
+            tip_index: None,
             expanded: false,
         }
     }
@@ -72,13 +72,13 @@ impl NotificationBar {
         self.min_notification_level = settings.extra.logging.notification_level;
 
         if settings.extra.logging.show_notification_tip {
-            if self.tip_message.is_none() {
-                self.tip_message = NOTIFICATION_TIPS
+            if self.tip_index.is_none() {
+                self.tip_index = NOTIFICATION_TIPS
                     .choose(&mut rand::rng())
-                    .map(|s| format!("Tip: {s}"));
+                    .map(|s| NOTIFICATION_TIPS.iter().position(|t| t == s).unwrap());
             }
         } else {
-            self.tip_message = None;
+            self.tip_index = None;
         }
     }
 
@@ -105,15 +105,19 @@ impl NotificationBar {
 
     pub fn ui(&mut self, ui: &mut Ui) {
         let now = Instant::now();
-        if now > self.receive_instant + TIMEOUT {
-            self.message = self
-                .tip_message
-                .clone()
-                .unwrap_or_else(|| NO_NOTIFICATIONS_MESSAGE.into());
-            self.current_level = LogSeverity::Debug;
-        }
+        let (message, current_level) = if now > self.receive_instant + TIMEOUT {
+            let message = if let Some(index) = self.tip_index {
+                tr_fmt("Tip: {}", &[tr(NOTIFICATION_TIPS[index])])
+            } else {
+                tr(NO_NOTIFICATIONS_MESSAGE)
+            };
 
-        let (fg, bg) = match self.current_level {
+            (message, LogSeverity::Debug)
+        } else {
+            (self.message.clone(), self.current_level)
+        };
+
+        let (fg, bg) = match current_level {
             LogSeverity::Error => (Color32::BLACK, log_colors::ERROR_LIGHT),
             LogSeverity::Warning => (Color32::BLACK, log_colors::WARNING_LIGHT),
             LogSeverity::Info => (Color32::BLACK, log_colors::INFO_LIGHT),
@@ -141,16 +145,16 @@ impl NotificationBar {
         bottom_bar.show(ui, |ui| {
             ui.with_layout(Layout::right_to_left(alignment), |ui| {
                 if !self.expanded {
-                    if ui.small_button("Expand").clicked() {
+                    if ui.small_button(tr("Expand")).clicked() {
                         self.expanded = true;
                     }
-                } else if ui.button("Reduce").clicked() {
+                } else if ui.button(tr("Reduce")).clicked() {
                     self.expanded = false;
                 }
                 ui.with_layout(Layout::left_to_right(alignment), |ui| {
                     //A LayoutJob that has its TextWrapping updated to fill the available space would probably be a more elegant solution.
                     ui.add(
-                        Label::new(RichText::new(&self.message).color(fg).size(12.0))
+                        Label::new(RichText::new(message).color(fg).size(12.0))
                             .wrap_mode(wrapping),
                     );
                 })

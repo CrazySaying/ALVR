@@ -174,7 +174,7 @@ impl SettingControl {
             Self::Dictionary(control) => control.ui(ui, session_fragment, allow_inline),
             Self::None => {
                 grid_flow_inline(ui, allow_inline);
-                ui.add_enabled_ui(false, |ui| ui.label("Unimplemented UI"));
+                ui.add_enabled_ui(false, |ui| ui.label(alvr_gui_common::tr("Unimplemented UI")));
 
                 None
             }

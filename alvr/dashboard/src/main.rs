@@ -32,6 +32,7 @@ fn main() {
     use alvr_common::ALVR_VERSION;
     use alvr_common::info;
     use alvr_filesystem as afs;
+    use alvr_gui_common::{set_language, tr_fmt};
     use eframe::{
         NativeOptions,
         egui::{IconData, ViewportBuilder},
@@ -64,6 +65,15 @@ fn main() {
 
     data_sources::clean_session();
 
+    // Apply the persisted language as early as possible so the first frame (and the window title)
+    // are rendered in the correct language.
+    set_language(
+        data_sources::get_read_only_local_session()
+            .settings()
+            .extra
+            .language,
+    );
+
     if data_sources::get_read_only_local_session()
         .settings()
         .extra
@@ -85,7 +95,7 @@ fn main() {
     }
 
     eframe::run_native(
-        &format!("ALVR Dashboard (streamer v{})", *ALVR_VERSION),
+        &tr_fmt("ALVR Dashboard (streamer v{})", &[ALVR_VERSION.to_string()]),
         NativeOptions {
             viewport: ViewportBuilder::default()
                 .with_app_id("alvr.dashboard")

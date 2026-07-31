@@ -1,5 +1,5 @@
 use super::{NestingInfo, SettingControl, reset};
-use alvr_gui_common::DisplayString;
+use alvr_gui_common::{DisplayString, tr};
 use alvr_packets::PathValuePair;
 use alvr_session::settings_schema::{ChoiceControlType, SchemaEntry, SchemaNode};
 use eframe::{
@@ -31,7 +31,7 @@ fn get_display_name(id: &str, strings: &HashMap<String, String>) -> String {
 pub struct Control {
     nesting_info: NestingInfo,
     default_variant: String,
-    default_string: String,
+    default_display: String,
     variant_labels: Vec<DisplayString>,
     variant_indices: HashMap<String, usize>,
     variant_controls: HashMap<String, SettingControl>,
@@ -54,15 +54,12 @@ impl Control {
             })
             .collect::<Vec<_>>();
 
-        let default_string = format!(
-            "\"{}\"",
-            variant_labels
-                .iter()
-                .find(|d| d.id == default)
-                .cloned()
-                .unwrap()
-                .display
-        );
+        let default_display = variant_labels
+            .iter()
+            .find(|d| d.id == default)
+            .cloned()
+            .unwrap()
+            .display;
 
         let variant_indices = schema_variants
             .iter()
@@ -89,7 +86,7 @@ impl Control {
         Self {
             nesting_info,
             default_variant: default,
-            default_string,
+            default_display,
             variant_labels,
             variant_indices,
             variant_controls,
@@ -130,7 +127,7 @@ impl Control {
                     ui,
                     &mut index,
                     self.variant_labels.len(),
-                    |idx| self.variant_labels[idx].display.clone(),
+                    |idx| tr(&self.variant_labels[idx].display),
                 );
                 if response.changed() {
                     variant_mut.clone_from(&self.variant_labels[index].id);
@@ -148,9 +145,9 @@ impl Control {
                     self.variant_labels.len() + 1,
                     |idx| {
                         if idx == 0 {
-                            "Preset not applied".into()
+                            tr("Preset not applied")
                         } else {
-                            self.variant_labels[idx - 1].display.clone()
+                            tr(&self.variant_labels[idx - 1].display)
                         }
                     },
                 );
@@ -163,7 +160,7 @@ impl Control {
             if reset::reset_button(
                 ui,
                 *variant_mut != self.default_variant,
-                &self.default_string,
+                &format!("\"{}\"", tr(&self.default_display)),
             )
             .clicked()
             {

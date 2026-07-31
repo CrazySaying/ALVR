@@ -1,6 +1,6 @@
 use alvr_common::{
-    ALVR_VERSION, DebugGroupsConfig, DebugGroupsConfigDefault, LogSeverity, LogSeverityDefault,
-    LogSeverityDefaultVariant,
+    ALVR_VERSION, DebugGroupsConfig, DebugGroupsConfigDefault, Language, LanguageDefault,
+    LanguageDefaultVariant, LogSeverity, LogSeverityDefault, LogSeverityDefaultVariant,
 };
 use alvr_system_info::{ClientFlavor, ClientFlavorDefault, ClientFlavorDefaultVariant};
 use bytemuck::{Pod, Zeroable};
@@ -1606,6 +1606,9 @@ It does not update in real time.")
 
     pub open_setup_wizard: bool,
     pub new_version_popup: Switch<NewVersionPopupConfig>,
+
+    #[schema(strings(display_name = "Language"))]
+    pub language: Language,
 }
 
 #[derive(SettingsSchema, Serialize, Deserialize, Clone)]
@@ -2260,6 +2263,9 @@ pub fn session_settings_default() -> SettingsDefault {
                 content: NewVersionPopupConfigDefault {
                     hide_while_version: ALVR_VERSION.to_string(),
                 },
+            },
+            language: LanguageDefault {
+                variant: Language::default().into(),
             },
         },
     }

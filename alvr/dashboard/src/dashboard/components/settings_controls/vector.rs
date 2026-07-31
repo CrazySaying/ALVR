@@ -1,4 +1,5 @@
 use super::{INDENTATION_STEP, NestingInfo, SettingControl, reset};
+use alvr_gui_common::tr;
 use crate::dashboard::components::{
     collapsible,
     up_down::{self, UpDownResult},
@@ -126,7 +127,7 @@ impl Control {
             }
 
             ui.label(" ");
-            if ui.button("Add element").clicked() {
+            if ui.button(tr("Add element")).clicked() {
                 let mut session_content =
                     session_fragment["content"].as_array_mut().unwrap().clone();
                 session_content.push(session_fragment["element"].clone());

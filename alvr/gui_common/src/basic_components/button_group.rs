@@ -1,4 +1,4 @@
-use crate::DisplayString;
+use crate::{DisplayString, tr};
 use egui::Ui;
 
 // todo: use a custom widget
@@ -9,7 +9,7 @@ pub fn button_group_clicked(
 ) -> bool {
     let mut clicked = false;
     for id in options {
-        let res = ui.selectable_value(selection, (**id).clone(), &id.display);
+        let res = ui.selectable_value(selection, (**id).clone(), tr(&id.display));
         if res.clicked() {
             clicked = true;
         }
