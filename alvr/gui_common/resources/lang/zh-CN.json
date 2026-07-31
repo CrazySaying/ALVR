@@ -215,7 +215,7 @@
   "Finished": "完成",
   "Firewall": "防火墙",
   "Float": "浮点",
-  "For hacking purposes, you can enable \"Extra\"->\"Logging\"->\"Log tracking\", \"Log button presses\" and \"Log haptics\". You can get the data using a websocket at ws://localhost:8082/api/events.": "出于调试目的，您可以启用“额外”->“日志”->“记录追踪”、“记录按键”和“记录震动反馈”。您可以通过 websocket（ws://localhost:8082/api/events）获取数据。",
+  "For hacking purposes, you can enable \"Extra\"->\"Logging\"->\"Log tracking\", \"Log button presses\" and \"Log haptics\". You can get the data using a websocket at ws://localhost:8084/api/events.": "出于调试目的，您可以启用“额外”->“日志”->“记录追踪”、“记录按键”和“记录震动反馈”。您可以通过 websocket（ws://localhost:8084/api/events）获取数据。",
   "Force HDR sRGB Correction": "强制 HDR sRGB 校正",
   "Force enable": "强制启用",
   "Force enable on smartphone clients": "在手机客户端上强制启用",

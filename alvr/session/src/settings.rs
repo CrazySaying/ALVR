@@ -2177,7 +2177,7 @@ pub fn session_settings_default() -> SettingsDefault {
                 enabled: true,
                 content: WiredClientAutoLaunchConfigDefault { boot_delay: 0 },
             },
-            web_server_port: 8082,
+            web_server_port: 8084,
             stream_port: 9944,
             osc_local_port: 9942,
             dscp: OptionalDefault {

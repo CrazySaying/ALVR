@@ -38,7 +38,7 @@ const NOTIFICATION_TIPS: &[&str] = &[
     r#"If you often experience image glitching, you can trade that with stutter frames using "Connection"->"Avoid video glitching"."#,
     r#"You can run custom commands/programs at headset connection/disconnection using "Connection"->"Enable on connect/disconnect script"."#,
     r#"In case you want to report a bug, to get a log file, enable "Extra"->"Logging"->"Log to disk". The log will be inside "session_log.txt"."#,
-    r#"For hacking purposes, you can enable "Extra"->"Logging"->"Log tracking", "Log button presses" and "Log haptics". You can get the data using a websocket at ws://localhost:8082/api/events."#,
+    r#"For hacking purposes, you can enable "Extra"->"Logging"->"Log tracking", "Log button presses" and "Log haptics". You can get the data using a websocket at ws://localhost:8084/api/events."#,
     r#"In case you want to report a bug and share your log, you should enable "Extra"->"Logging"->"Prefer backtrace"."#,
     r#"You can quickly cycle through tips like this one by toggling "Extra"->"Logging"->"Show notification tip"."#,
     r#"It's handy to enable "Extra"->"SteamVR Launcher"->"Open and close SteamVR automatically"."#,
