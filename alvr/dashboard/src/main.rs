@@ -110,6 +110,10 @@ fn main() {
         },
         {
             Box::new(move |creation_context| {
+                // Load a system CJK font so Chinese/Japanese localized strings
+                // render instead of showing as empty boxes.
+                alvr_gui_common::fonts::setup_fonts(&creation_context.egui_ctx);
+
                 let data_source = DataSources::new(
                     creation_context.egui_ctx.clone(),
                     server_events_sender,

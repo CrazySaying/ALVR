@@ -1,4 +1,6 @@
 mod basic_components;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod fonts;
 pub mod i18n;
 pub mod theme;
 
