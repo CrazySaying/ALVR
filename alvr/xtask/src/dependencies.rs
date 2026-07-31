@@ -402,6 +402,15 @@ fn get_android_openxr_loaders(selection: OpenXRLoadersSelection) {
         "https://developer.yvrdream.com/yvrdoc/sdk/openxr/yvr_openxr_mobile_sdk_2.0.0.zip",
         "yvr_openxr_mobile_sdk_2.0.0/OpenXR/Libs/Android/arm64-v8a",
     );
+
+    // YVR 1 loads the OpenXR loader under the "_yvr1" suffix; it is the same SDK binary
+    // as the "_yvr" loader, so just alias it so the APK ships libopenxr_loader_yvr1.so.
+    let android_openxr_dir = afs::deps_dir().join("android_openxr/arm64-v8a");
+    fs::copy(
+        android_openxr_dir.join("libopenxr_loader_yvr.so"),
+        android_openxr_dir.join("libopenxr_loader_yvr1.so"),
+    )
+    .unwrap();
 }
 
 pub fn build_android_deps(
