@@ -78,6 +78,10 @@ fn apply_device_preset(
     platform_string: &str,
     device_model: &str,
 ) {
+    // Log what the client actually reported, for calibrating the YVR detection
+    // against real headset Build.MANUFACTURER/MODEL values.
+    info!("Client device report: platform={platform_string}, device_model={device_model}");
+
     let lower_model = device_model.to_lowercase();
     let is_yvr = platform_string.starts_with("YVR")
         || platform_string.starts_with("Play For Dream")

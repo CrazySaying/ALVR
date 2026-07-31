@@ -279,7 +279,20 @@ pub fn entry_point() {
 
     let graphics_context = Rc::new(GraphicsContext::new_gl());
 
-    let mut last_lobby_message = String::new();
+    // Surface the real device identity in the headset lobby and in logcat so the
+    // YVR server-side auto-preset can be calibrated against the actual
+    // Build.MANUFACTURER/MODEL values reported by YVR1/YVR2 hardware.
+    let device_info_message = format!(
+        "Platform: {platform}\nManufacturer: {mfr}\nModel: {model}\nBuild device: {dev}\nBuild product: {prod}",
+        platform = platform,
+        mfr = alvr_system_info::manufacturer_name(),
+        model = alvr_system_info::device_model(),
+        dev = alvr_system_info::device_name(),
+        prod = alvr_system_info::product_name(),
+    );
+    info!("Device info: {device_info_message}");
+
+    let mut last_lobby_message = device_info_message;
 
     'session_loop: loop {
         let xr_system = xr_instance
