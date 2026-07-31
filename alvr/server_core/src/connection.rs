@@ -13,7 +13,7 @@ use alvr_common::{
     LifecycleState, QUEST_CONTROLLER_PROFILE_PATH, con_bail, dbg_connection, debug, error,
     glam::{UVec2, Vec2},
     info,
-    parking_lot::{Condvar, Mutex, RwLock},
+    parking_lot::{Condvar, Mutex, RwLock, RwLockWriteGuard},
     settings_schema::Switch,
     warn,
 };
@@ -74,7 +74,7 @@ fn is_streaming(client_hostname: &str) -> bool {
 // The controller rotation offset (25° around X) is the YVR controller's physical
 // orientation calibration relative to the Oculus Touch pose.
 fn apply_device_preset(
-    session_manager_lock: &mut parking_lot::RwLockWriteGuard<'_, ServerSessionManager>,
+    session_manager_lock: &mut RwLockWriteGuard<'_, ServerSessionManager>,
     platform_string: &str,
     device_model: &str,
 ) {
