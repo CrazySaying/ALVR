@@ -487,3 +487,62 @@ pub fn eye_face_tracking_schema() -> PresetSchemaNode {
         gui: ChoiceControlType::ButtonGroup,
     })
 }
+
+// Manual preset for YVR 1 / YVR 2 (Play For Dream MR) headsets. Selecting a variant applies the
+// headset/controller emulation modes, the controller pose offsets and the device model in one go.
+// Previously this was auto-applied on connection (apply_device_preset), but ALVR convention is to
+// configure the emulated device manually in the dashboard, so it is now a user-triggered preset.
+pub fn yvr_preset_schema() -> PresetSchemaNode {
+    PresetSchemaNode::HigherOrderChoice(HigherOrderChoiceSchema {
+        name: "YVR device preset".into(),
+        strings: [(
+            "help".into(),
+            "Applies the headset/controller emulation modes and controller pose offsets for \
+             YVR 1 (D1) and YVR 2 (D3) headsets. SteamVR needs a restart after applying."
+                .into(),
+        )]
+        .into_iter()
+        .collect(),
+        flags: ["steamvr-restart".into()].into_iter().collect(),
+        options: [
+            ("YVR 1 (D1)", "Yvr1", "YvrTouch1"),
+            ("YVR 2 (D3)", "Yvr2", "YvrTouch2"),
+        ]
+        .into_iter()
+        .map(|(display_name, headset_emulation, controller_emulation)| {
+            HigherOrderChoiceOption {
+                display_name: display_name.into(),
+                modifiers: vec![
+                    string_modifier(
+                        "session_settings.headset.emulation_mode.variant",
+                        headset_emulation,
+                    ),
+                    string_modifier(
+                        "session_settings.headset.controllers.content.emulation_mode.variant",
+                        controller_emulation,
+                    ),
+                    PresetModifier {
+                        target_path:
+                            "session_settings.headset.controllers.content.left_controller_position_offset"
+                                .into(),
+                        operation: PresetModifierOperation::Assign(serde_json::json!([
+                            0.0, 0.0, 0.0
+                        ])),
+                    },
+                    PresetModifier {
+                        target_path:
+                            "session_settings.headset.controllers.content.left_controller_rotation_offset"
+                                .into(),
+                        operation: PresetModifierOperation::Assign(serde_json::json!([
+                            25.0, 0.0, 0.0
+                        ])),
+                    },
+                ],
+                content: None,
+            }
+        })
+        .collect(),
+        default_option_display_name: "YVR 1 (D1)".into(),
+        gui: ChoiceControlType::ButtonGroup,
+    })
+}

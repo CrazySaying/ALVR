@@ -17,7 +17,8 @@ pub fn registered_button_set(
         | ControllersEmulationMode::QuestPro
         // YVR Touch controllers share the Oculus Touch button layout (A/B/X/Y,
         // joystick, grip, trigger).
-        | ControllersEmulationMode::YvrTouch => CONTROLLER_PROFILE_INFO
+        | ControllersEmulationMode::YvrTouch1
+        | ControllersEmulationMode::YvrTouch2 => CONTROLLER_PROFILE_INFO
             .get(&QUEST_CONTROLLER_PROFILE_ID)
             .unwrap()
             .button_set

@@ -33,6 +33,7 @@ pub struct SettingsTab {
     microphone_preset: PresetControl,
     hand_tracking_interaction_preset: PresetControl,
     eye_face_tracking_preset: PresetControl,
+    yvr_preset: PresetControl,
     top_level_entries: Vec<TopLevelEntry>,
     session_settings_json: Option<json::Value>,
     last_update_instant: Instant,
@@ -80,6 +81,7 @@ impl SettingsTab {
                 builtin_schema::hand_tracking_interaction_schema(),
             ),
             eye_face_tracking_preset: PresetControl::new(builtin_schema::eye_face_tracking_schema()),
+            yvr_preset: PresetControl::new(builtin_schema::yvr_preset_schema()),
             top_level_entries,
             session_settings_json: None,
             last_update_instant: Instant::now(),
@@ -105,6 +107,7 @@ impl SettingsTab {
             .update_session_settings(&settings_json);
         self.eye_face_tracking_preset
             .update_session_settings(&settings_json);
+        self.yvr_preset.update_session_settings(&settings_json);
 
         self.session_settings_json = Some(settings_json);
     }
@@ -178,6 +181,9 @@ impl SettingsTab {
                             ui.end_row();
 
                             path_value_pairs.extend(self.eye_face_tracking_preset.ui(ui));
+                            ui.end_row();
+
+                            path_value_pairs.extend(self.yvr_preset.ui(ui));
                             ui.end_row();
                         })
                 });
