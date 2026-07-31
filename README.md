@@ -1,89 +1,97 @@
 <p align="center"> <img width="500" src="resources/ALVR-Grey.svg"/> </p>
 
-# ALVR - Air Light VR
+# ALVR - Air Light VR（中文版 Fork）
 
-[![badge-discord][]][link-discord] [![badge-matrix][]][link-matrix] [![badge-opencollective][]][link-opencollective]
+通过 Wi-Fi 将 PC 上的 VR 游戏串流到头显。
 
-Stream VR games from your PC to your headset over Wi-Fi.  
-This is a fork of [ALVR](https://github.com/polygraphene/ALVR).
+本项目是基于 [ALVR](https://github.com/alvr-org/ALVR) 的 **中文本地化 + YVR 设备支持** Fork，由 [CrazySaying](https://github.com/CrazySaying) 维护。
 
-### Direct download (latest version):
-### [Windows Launcher](https://github.com/alvr-org/ALVR/releases/latest/download/alvr_launcher_windows.zip) | [Linux Launcher](https://github.com/alvr-org/ALVR/releases/latest/download/alvr_launcher_linux.tar.gz)
+## Fork 特性
 
-## Compatibility
+本 Fork 在保留上游 ALVR 全部功能的基础上，主要增加了以下内容：
 
-|          VR Headset          |                                        Support                                         |
-| :--------------------------: | :------------------------------------------------------------------------------------: |
-|       Apple Vision Pro       |    :heavy_check_mark: ([store link](https://apps.apple.com/app/alvr/id6479728026))     |
-|      Quest 1/2/3/3S/Pro      | :heavy_check_mark: ([store link](https://www.meta.com/experiences/7674846229245715) *) |
-|     Pico Neo 3/4/4 Ultra     |                                   :heavy_check_mark:                                   |
-|    Play For Dream YVR 1/2/MR |                                   :heavy_check_mark:                                   |
-| Vive Focus 3/Vision/XR Elite |                                   :heavy_check_mark:                                   |
-|     PhoneVR (smartphone)     |     :heavy_check_mark: ** ([repo](https://github.com/PhoneVR-Developers/PhoneVR))      |
-|        Android/Monado        |                                   :warning: **                                         |
-|           Lynx R1            |                                   :warning: ***                                        |
-|          Oculus Go           |                 :x: ([old repo](https://github.com/polygraphene/ALVR))                 |
+- **YVR 1 / YVR 2（Play For Dream）设备支持**
+  - 移植自 YVR 官方串流助手（PFDM Streaming Assistant）的 YVR1（D1）/ YVR2（D3）头显与手柄支持。
+  - 内置 YVR 手柄渲染模型（D1 / D3 左右手柄）。
+  - YVR 手柄相对 Oculus Touch 姿态的 25° 旋转偏移校准，握持方向与实际一致。
+- **YVR 设备预设**
+  - Dashboard 内一键应用 "YVR device preset"，自动设置 YVR1 / YVR2 模拟模式与手柄偏移，无需手动逐项配置。
+- **中文本地化**
+  - Dashboard 与 Launcher 界面全面汉化（zh-CN）。
+  - 内置中文字体加载支持，解决中文乱码问题。
+- **稳定性修复**
+  - 默认 Web 服务端口改为 **8084**，避开腾讯 QQ（QQNT）占用 8082 导致的启动崩溃。
+  - 修复 YVR 预设数组偏移写入失败（`invalid type: floating point 0.0, expected a boolean`）等问题。
+  - 移植 YVR1 边缘延迟与加载器修复（来自 ALVR-shiroha）。
+- **CI 手动构建工作流**
+  - GitHub Actions 提供 `Manual build` 工作流，使用 **release** 构建产出 Windows / Linux / Android 安装包。
 
-\* ALVR for Quest 1 is not available through the Meta store.  
-\** Works on some smartphones, but has not been extensively tested.
-\*** Temporarily removed, last supported on version [20.14.1](https://github.com/alvr-org/ALVR/releases/tag/v20.14.1).
+## 兼容性
 
-|     PC OS      |                                    Support                                    |
-| :------------: | :---------------------------------------------------------------------------: |
-| Windows 10/11  | :heavy_check_mark: ([store link](https://store.steampowered.com/app/3312710)) |
-| Windows XP/7/8 |                                      :x:                                      |
-|     Linux      |                             :heavy_check_mark:****                            |
-|     macOS      |                                      :x:                                      |
+|             VR 头显             |          支持情况          |
+| :-----------------------------: | :------------------------: |
+|  **YVR 1 / YVR 2 / Play For Dream MR** | :heavy_check_mark: **重点支持** |
+|       Quest 1/2/3/3S/Pro        |   :heavy_check_mark: (\*)   |
+|      Pico Neo 3/4/4 Ultra       |        :heavy_check_mark:        |
+|   Vive Focus 3/Vision/XR Elite  |        :heavy_check_mark:        |
+|        PhoneVR（手机）          | :heavy_check_mark: (\*\*) |
+|        Android / Monado         |        :warning: (\*\*)       |
 
-\**** Please check the wiki for detailed compatibility information.
+\* Quest 1 不在 Meta 商店上架。  
+\*\* 部分手机可用，但未经广泛测试。
 
-### Requirements
+|         PC 操作系统          |     支持情况      |
+| :-------------------------: | :---------------: |
+|        Windows 10/11        |  :heavy_check_mark:  |
+|      Windows XP/7/8         |         :x:        |
+|            Linux            |  :heavy_check_mark: (\*\*\*) |
+|            macOS            |         :x:        |
 
--   A supported standalone VR headset (see compatibility table above).
--   SteamVR.
--   A high-end gaming PC:
-    -   See the OS compatibility table above.
-    -   NVIDIA GPU with NVENC support (GTX 1000 series or newer), an AMD GPU with AMF VCE support, or an INTEL GPU with VPL support (Arc, Tiger Lake or newer), with the latest drivers.
-    -   On laptops with both an integrated GPU (Intel HD, AMD iGPU) and a dedicated GPU (NVIDIA GTX/RTX, AMD HD/R5/R7), make sure to assign the dedicated GPU (or "high performance graphics adapter") to ALVR and SteamVR for the best performance and compatibility.  
-        (NVIDIA: Nvidia Control Panel → 3D Settings → Application Settings; AMD: similar method)
+\*\*\* 详细兼容性请参考 wiki。
 
--   Network:
-    -   802.11ac 5 GHz Wi-Fi for the headset, and wired Ethernet for the PC is recommended.
-    -   The PC and the headset must be connected to the same router (or use a routed connection as described [here](https://github.com/alvr-org/ALVR/wiki/ALVR-v14-and-Above)).
+### 硬件要求
 
-## Installation
+-   一台受支持的独立 VR 头显（见上方兼容表）。
+-   SteamVR。
+-   一台性能较好的 PC：
+    -   操作系统见上方兼容表。
+    -   NVIDIA GPU（NVENC，GTX 1000 系列或更新）、AMD GPU（AMF VCE）、或 Intel GPU（VPL，Arc / Tiger Lake 或更新），并安装最新驱动。
+    -   笔记本同时有核显（Intel HD / AMD iGPU）和独显（NVIDIA GTX/RTX / AMD）时，请将 **ALVR 和 SteamVR 指定到独显**（"高性能图形适配器"）以获得最佳性能。
+      （NVIDIA：NVIDIA 控制面板 → 管理 3D 设置 → 程序设置；AMD：类似方法）
+-   网络：
+    -   头显使用 **802.11ac 5GHz Wi-Fi**，PC 建议使用有线以太网。
+    -   PC 与头显需连接到同一路由器（或使用[路由转发](https://github.com/alvr-org/ALVR/wiki/ALVR-v14-and-Above)连接）。
 
-Follow the [installation guide](https://github.com/alvr-org/ALVR/wiki/Installation-guide).
+## 安装
 
-## Troubleshooting
+参考[安装指南](https://github.com/alvr-org/ALVR/wiki/Installation-guide)。
 
--   See the [Troubleshooting](https://github.com/alvr-org/ALVR/wiki/Troubleshooting) page, and [Linux Troubleshooting](https://github.com/alvr-org/ALVR/wiki/Linux-Troubleshooting) if applicable.
--   Configuration recommendations and additional information can be found [here](https://github.com/alvr-org/ALVR/wiki/Information-and-Recommendations).
+## 故障排查
 
-## Uninstallation
+-   参考[故障排查](https://github.com/alvr-org/ALVR/wiki/Troubleshooting)页面（Linux 见 [Linux Troubleshooting](https://github.com/alvr-org/ALVR/wiki/Linux-Troubleshooting)）。
+-   配置建议与更多信息见[这里](https://github.com/alvr-org/ALVR/wiki/Information-and-Recommendations)。
+-   串流设置参考：见仓库 `doc/` 目录下的 [YVR 2 串流优化指南](doc/ALVR-YVR2-静态注视点串流优化指南.md)。
 
-Open `ALVR Dashboard.exe`, go to the `Installation` tab, then press `Remove firewall rules`.  
-Close the ALVR window and delete the ALVR folder.
+## 卸载
 
-## Build from Source
+打开 `ALVR Dashboard.exe`，进入 `安装` 选项卡，点击 `移除防火墙规则`。  
+关闭 ALVR 窗口并删除 ALVR 文件夹。
 
-Follow the [build guide](https://github.com/alvr-org/ALVR/wiki/Building-From-Source).
+## 从源码构建
 
-## License
+参考[构建指南](https://github.com/alvr-org/ALVR/wiki/Building-From-Source)。  
+也可在 GitHub Actions 上手动触发 `Manual build` 工作流，用 release 模式构建各平台安装包。
 
-ALVR is licensed under the [MIT License](LICENSE).
+## 许可证
 
-## Privacy Policy
+ALVR 使用 [MIT 许可证](LICENSE)。
 
-ALVR apps do not directly collect any personal data.
+## 隐私政策
 
-## Donate
+ALVR 应用不主动收集任何个人数据。
 
-If you would like to support this project, you can donate through our [Open Source Collective account](https://opencollective.com/alvr).
+## 致谢
 
-[badge-discord]: https://img.shields.io/discord/720612397580025886?style=for-the-badge&logo=discord&color=5865F2 "Join us on Discord"
-[link-discord]: https://discord.gg/ALVR
-[badge-matrix]: https://img.shields.io/static/v1?label=chat&message=%23alvr&style=for-the-badge&logo=matrix&color=blueviolet "Join us on Matrix"
-[link-matrix]: https://matrix.to/#/#alvr:ckie.dev?via=ckie.dev
-[badge-opencollective]: https://img.shields.io/opencollective/all/alvr?style=for-the-badge&logo=opencollective&color=79a3e6 "Donate"
-[link-opencollective]: https://opencollective.com/alvr
+-   上游 [ALVR](https://github.com/alvr-org/ALVR) 项目及其社区。
+-   [ALVR-shiroha](https://github.com/alvr-shiroha/ALVR)（YVR 相关修复的参考）。
+-   YVR / 玩出梦想（Play For Dream）官方串流助手（设备支持移植来源）。
