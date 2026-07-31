@@ -69,11 +69,19 @@ pub struct ConnectionContext {
 }
 
 fn set_hud_message(event_queue: &Mutex<VecDeque<ClientCoreEvent>>, message: &str) {
+    // The header (version/hostname/IP/device) is part of every lobby message, so
+    // the real headset identity is always visible alongside the status text.
+    let device = format!(
+        "{} {}",
+        alvr_system_info::device_manufacturer(),
+        alvr_system_info::device_model()
+    );
     let message = format!(
-        "ALVR v{}\nhostname: {}\nIP: {}\n\n{message}",
+        "ALVR v{}\nhostname: {}\nIP: {}\nDevice: {}\n\n{message}",
         *ALVR_VERSION,
         Config::load().hostname,
         alvr_system_info::local_ip(),
+        device.trim(),
     );
 
     event_queue

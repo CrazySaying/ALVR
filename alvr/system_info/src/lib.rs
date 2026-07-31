@@ -186,6 +186,19 @@ pub fn device_model() -> String {
     }
 }
 
+// Device manufacturer (e.g. Android Build.MANUFACTURER). Named differently from
+// `manufacturer_name` to avoid colliding with the Android-only re-export.
+pub fn device_manufacturer() -> String {
+    #[cfg(target_os = "android")]
+    {
+        android::manufacturer_name()
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        String::new()
+    }
+}
+
 #[cfg(not(target_os = "android"))]
 pub fn local_ip() -> std::net::IpAddr {
     use std::net::{IpAddr, Ipv4Addr};
