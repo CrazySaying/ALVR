@@ -36,7 +36,7 @@ pub fn setup_fonts(ctx: &egui::Context) {
                     let mut fonts = egui::FontDefinitions::default();
                     fonts
                         .font_data
-                        .insert("cjk".to_owned(), egui::FontData::from_owned(bytes));
+                        .insert("cjk".to_owned(), egui::FontData::from_owned(bytes).into());
                     for family in [
                         egui::FontFamily::Proportional,
                         egui::FontFamily::Monospace,
