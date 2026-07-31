@@ -1,5 +1,5 @@
 use crate::{InstallationInfo, Progress, ReleaseChannelsInfo, UiMessage, WorkerMessage, actions};
-use alvr_gui_common::ModalButton;
+use alvr_gui_common::{ModalButton, tr};
 use eframe::{
     egui::{
         self, Button, CentralPanel, ComboBox, Context, Frame, Grid, Layout, ProgressBar, RichText,
@@ -111,11 +111,11 @@ impl Launcher {
                         .collect();
 
                     Grid::new("add-version-grid").num_columns(2).show(ui, |ui| {
-                        ui.label("Channel");
+                        ui.label(tr("Channel"));
                         ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
                             let channel_str = match version.release_channel {
-                                ReleaseChannelType::Stable => "Stable",
-                                ReleaseChannelType::Nightly => "Nightly",
+                                ReleaseChannelType::Stable => tr("Stable"),
+                                ReleaseChannelType::Nightly => tr("Nightly"),
                             };
 
                             ComboBox::from_id_salt("channel")
@@ -143,7 +143,7 @@ impl Launcher {
                         });
                         ui.end_row();
 
-                        ui.label("Version");
+                        ui.label(tr("Version"));
                         ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
                             ComboBox::from_id_salt("version")
                                 .selected_text(version_str)
@@ -156,12 +156,12 @@ impl Launcher {
                         ui.end_row();
 
                         if cfg!(windows) {
-                            ui.label("Copy session from:");
+                            ui.label(tr("Copy session from:"));
                             ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
                                 ComboBox::from_id_salt("session")
-                                    .selected_text(session_version.clone().unwrap_or("None".into()))
+                                    .selected_text(session_version.clone().unwrap_or(tr("None")))
                                     .show_ui(ui, |ui| {
-                                        ui.selectable_value(&mut session_version, None, "None");
+                                        ui.selectable_value(&mut session_version, None, tr("None"));
                                         for ver_str in installations_with_session {
                                             ui.selectable_value(
                                                 &mut session_version,
@@ -224,10 +224,10 @@ impl Launcher {
         let mut delete_version = false;
         let response = alvr_gui_common::modal(
             ctx,
-            "Edit version",
+            &tr("Edit version"),
             Some(|ui: &mut Ui| {
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
-                    delete_version = ui.button("Delete version").clicked();
+                    delete_version = ui.button(tr("Delete version")).clicked();
                 });
             }),
             &[ModalButton::Close],
@@ -316,13 +316,13 @@ impl eframe::App for Launcher {
                                     .show(ui, |ui| {
                                         ui.label(&installation.version);
                                         ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                                            if ui.button("Edit").clicked() {
+                                            if ui.button(tr("Edit")).clicked() {
                                                 self.popup = PopupType::EditVersion(
                                                     installation.version.clone(),
                                                 );
                                             }
 
-                                            if ui.button("Open directory").clicked() {
+                                            if ui.button(tr("Open directory")).clicked() {
                                                 open::that_in_background(path);
                                             }
 
@@ -356,7 +356,7 @@ impl eframe::App for Launcher {
                                                 }
                                             };
 
-                                            if ui.button("Launch").clicked() {
+                                            if ui.button(tr("Launch")).clicked() {
                                                 match actions::launch_dashboard(
                                                     &installation.version,
                                                 ) {
@@ -417,10 +417,10 @@ impl eframe::App for Launcher {
             State::Error(e) => {
                 let e = e.clone(); // Avoid borrowing issues with the closure for the layout
                 ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                    ui.colored_label(Color32::LIGHT_RED, "Error!");
+                    ui.colored_label(Color32::LIGHT_RED, tr("Error!"));
                     ui.label(e);
 
-                    if ui.button("Close").clicked() {
+                    if ui.button(tr("Close")).clicked() {
                         self.state = State::Default;
                     }
                 });
