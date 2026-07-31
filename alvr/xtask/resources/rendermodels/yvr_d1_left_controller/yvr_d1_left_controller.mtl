@@ -1,0 +1,10 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl Material_75
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd yvr_d1_left_controller.tga
+Ni 1.00

@@ -268,6 +268,27 @@ pub fn build_streamer(
             build_layout.openvr_driver_manifest(),
         )
         .unwrap();
+
+        // copy YVR controller render models so SteamVR can resolve
+        // {alvr_server}/rendermodels/yvr_d{1,3}_*_controller
+        let rendermodels_src = afs::crate_dir("xtask").join("resources/rendermodels");
+        let rendermodels_dst = build_layout.resources_dir().join("rendermodels");
+        copy_dir_all(&rendermodels_src, &rendermodels_dst);
+    }
+}
+
+// Recursive directory copy used to ship the YVR render models into the driver's
+// resources dir. Keeps the same layout: <src>/<model>/... -> <dst>/<model>/...
+fn copy_dir_all(src: &PathBuf, dst: &PathBuf) {
+    fs::create_dir_all(dst).unwrap();
+    for entry in fs::read_dir(src).unwrap().flatten() {
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+        if src_path.is_dir() {
+            copy_dir_all(&src_path, &dst_path);
+        } else {
+            fs::copy(&src_path, &dst_path).unwrap();
+        }
     }
 }
 

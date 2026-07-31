@@ -875,6 +875,8 @@ pub enum HeadsetEmulationMode {
     #[schema(strings(display_name = "Pico 4"))]
     Pico4,
     Vive,
+    #[schema(strings(display_name = "YVR"))]
+    Yvr,
     Custom {
         serial_number: String,
     },
@@ -1013,6 +1015,8 @@ pub enum ControllersEmulationMode {
     ViveWand,
     #[schema(strings(display_name = "Vive Tracker"))]
     ViveTracker,
+    #[schema(strings(display_name = "YVR Touch"))]
+    YvrTouch,
     Custom {
         serial_number: String,
         button_set: Vec<String>,
@@ -1293,6 +1297,13 @@ Tilted: the world gets tilted when long pressing the recentering button. This is
 
     #[schema(flag = "steamvr-restart")]
     pub emulation_mode: HeadsetEmulationMode,
+
+    // Runtime-detected headset model (e.g. "YVR1"/"YVR2"), written by the server
+    // when a YVR client connects. Hidden from the dashboard; used by props.rs to
+    // pick YVR controller render models. Equivalent of the official YVR app's
+    // "devicetype" field.
+    #[schema(flag = "hidden")]
+    pub device_model: String,
 
     #[schema(strings(
         help = r#"Power Savings might increase latency or reduce framerate consistency but decreases temperatures and improves battery life.
@@ -1954,6 +1965,7 @@ pub fn session_settings_default() -> SettingsDefault {
                 },
                 variant: HeadsetEmulationModeDefaultVariant::Quest2,
             },
+            device_model: "Unknown".into(),
             performance_level: PerformanceLevelConfigDefault {
                 cpu: SwitchDefault {
                     enabled: false,

@@ -326,6 +326,7 @@ pub fn entry_point() {
 
         let capabilities = ClientCapabilities {
             platform,
+            device_model: alvr_system_info::device_model(),
             default_view_resolution,
             max_view_resolution,
             refresh_rates,

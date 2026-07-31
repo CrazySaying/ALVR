@@ -214,6 +214,7 @@ pub extern "C" fn alvr_initialize(capabilities: AlvrClientCapabilities) {
 
     let capabilities = ClientCapabilities {
         platform: alvr_system_info::platform(None, None),
+        device_model: alvr_system_info::device_model(),
         default_view_resolution,
         max_view_resolution,
         refresh_rates,

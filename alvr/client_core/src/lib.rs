@@ -61,6 +61,9 @@ pub enum ClientCoreEvent {
 #[derive(Clone)]
 pub struct ClientCapabilities {
     pub platform: Platform,
+    // Device model string (e.g. Android Build.MODEL), used by the server to
+    // auto-apply device-specific presets (e.g. YVR1 vs YVR2).
+    pub device_model: String,
     pub default_view_resolution: UVec2,
     pub max_view_resolution: UVec2,
     pub refresh_rates: Vec<f32>,

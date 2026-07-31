@@ -166,6 +166,7 @@ fn connection_pipeline(
             ConnectionAcceptedInfo {
                 client_protocol_id: alvr_common::protocol_id_u64(),
                 platform_string: capabilities.platform.to_string(),
+                device_model: capabilities.device_model.clone(),
                 server_ip,
                 streaming_capabilities: Some(
                     VideoStreamingCapabilities {

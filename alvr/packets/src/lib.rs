@@ -65,6 +65,9 @@ impl VideoStreamingCapabilities {
 pub struct ConnectionAcceptedInfo {
     pub client_protocol_id: u64,
     pub platform_string: String,
+    // Android Build.MODEL of the headset (e.g. "YVR1"/"YVR2"). Empty on non-Android
+    // platforms. Lets the server auto-apply device-specific presets.
+    pub device_model: String,
     pub server_ip: IpAddr, // must be unused for now
     pub streaming_capabilities: Option<VideoStreamingCapabilities>,
 }

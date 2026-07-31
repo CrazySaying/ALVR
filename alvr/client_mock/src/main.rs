@@ -191,6 +191,7 @@ fn client_thread(
 ) {
     let capabilities = ClientCapabilities {
         platform: alvr_system_info::platform(None, None),
+        device_model: alvr_system_info::device_model(),
         default_view_resolution: UVec2::new(1920, 1832),
         max_view_resolution: UVec2::new(1920, 1832),
         refresh_rates: vec![60.0, 72.0, 80.0, 90.0, 120.0],

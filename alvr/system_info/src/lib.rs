@@ -173,6 +173,19 @@ pub fn platform(runtime_name: Option<String>, runtime_version: Option<u64>) -> P
     }
 }
 
+// Device model reported by the headset (e.g. Android Build.MODEL). Used by the
+// server to auto-apply device-specific presets. Empty string when unavailable.
+pub fn device_model() -> String {
+    #[cfg(target_os = "android")]
+    {
+        android::model_name()
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        String::new()
+    }
+}
+
 #[cfg(not(target_os = "android"))]
 pub fn local_ip() -> std::net::IpAddr {
     use std::net::{IpAddr, Ipv4Addr};

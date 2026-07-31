@@ -162,7 +162,9 @@ impl eframe::App for Dashboard {
                     self.statistics_tab.update_statistics(statistics)
                 }
                 EventType::Session(session) => {
-                    set_language(session.session_settings.extra.language.variant.into());
+                    // Clone: `variant` is non-Copy and `into()` would partially move
+                    // out of `session.session_settings`, which is borrowed right after.
+                    set_language(session.session_settings.extra.language.variant.clone().into());
 
                     let settings = session.to_settings();
 

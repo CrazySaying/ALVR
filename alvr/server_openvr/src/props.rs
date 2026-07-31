@@ -115,6 +115,23 @@ pub fn set_openvr_prop(instance_ptr: Option<*mut c_void>, device_id: u64, prop: 
     }
 }
 
+// Canonical YVR device model reported by the connected client (e.g. "YVR1"/"YVR2").
+// Read from the runtime-detected device_model setting, with a "YVR" fallback.
+fn yvr_device_model() -> String {
+    let settings = alvr_server_core::settings();
+    let model = settings.headset.device_model.clone();
+    let lower = model.to_lowercase();
+    if lower.contains("yvr2") || lower.contains("d3") {
+        "YVR2".into()
+    } else if lower.contains("yvr1") || lower.contains("d1") {
+        "YVR1".into()
+    } else if !model.is_empty() && !model.eq_ignore_ascii_case("unknown") {
+        model
+    } else {
+        "YVR".into()
+    }
+}
+
 fn serial_number(device_id: u64) -> String {
     let settings = alvr_server_core::settings();
 
@@ -126,22 +143,24 @@ fn serial_number(device_id: u64) -> String {
             HeadsetEmulationMode::QuestPro => "230YC0XXXX00XX".into(),
             HeadsetEmulationMode::Pico4 => "VRLINKHMDPICO4".into(),
             HeadsetEmulationMode::Vive => "HTCVive-001".into(),
+            HeadsetEmulationMode::Yvr => format!("{}_Headset", yvr_device_model()),
             HeadsetEmulationMode::Custom { serial_number, .. } => serial_number.clone(),
         }
     } else if device_id == *HAND_LEFT_ID || device_id == *HAND_RIGHT_ID {
         if let Switch::Enabled(controllers) = &settings.headset.controllers {
             let serial_number = match &controllers.emulation_mode {
-                ControllersEmulationMode::Quest1Touch => "1PALCXXXX00000_Controller", // 1PALCLC left, 1PALCRC right
-                ControllersEmulationMode::Quest2Touch => "1WMHH000X00000_Controller",
-                ControllersEmulationMode::Quest3Plus => "2G0YXX0X0000XX_Controller", // 2G0YY Left 2G0YZ Right
-                ControllersEmulationMode::QuestPro => "230YXXXXXXXXXX_Controller", // 230YT left, 230YV right
+                ControllersEmulationMode::Quest1Touch => "1PALCXXXX00000_Controller".into(), // 1PALCLC left, 1PALCRC right
+                ControllersEmulationMode::Quest2Touch => "1WMHH000X00000_Controller".into(),
+                ControllersEmulationMode::Quest3Plus => "2G0YXX0X0000XX_Controller".into(), // 2G0YY Left 2G0YZ Right
+                ControllersEmulationMode::QuestPro => "230YXXXXXXXXXX_Controller".into(), // 230YT left, 230YV right
+                ControllersEmulationMode::YvrTouch => format!("{}_Controller", yvr_device_model()),
                 ControllersEmulationMode::RiftSTouch
                 | ControllersEmulationMode::Pico4
                 | ControllersEmulationMode::PSVR2Sense
                 | ControllersEmulationMode::ValveIndex
                 | ControllersEmulationMode::ViveWand
-                | ControllersEmulationMode::ViveTracker => "ALVR Remote Controller",
-                ControllersEmulationMode::Custom { serial_number, .. } => serial_number,
+                | ControllersEmulationMode::ViveTracker => "ALVR Remote Controller".into(),
+                ControllersEmulationMode::Custom { serial_number, .. } => serial_number.clone(),
             };
 
             if device_id == *HAND_LEFT_ID {
@@ -310,6 +329,18 @@ pub extern "C" fn set_device_openvr_props(instance_ptr: *mut c_void, device_id: 
                 set_prop(DriverVersionString, "");
                 set_icons("{htc}/icons/vive_headset");
             }
+            HeadsetEmulationMode::Yvr => {
+                let yvr_model = yvr_device_model();
+                set_prop(TrackingSystemNameString, "yvr");
+                set_prop(ModelNumberString, yvr_model.as_str());
+                set_prop(ManufacturerNameString, "YVR");
+                set_prop(RenderModelNameString, "generic_hmd");
+                set_prop(
+                    RegisteredDeviceTypeString,
+                    format!("yvr/{yvr_model}").as_str(),
+                );
+                set_prop(DriverVersionString, "");
+            }
             HeadsetEmulationMode::Custom { .. } => (),
         }
 
@@ -404,6 +435,50 @@ pub extern "C" fn set_device_openvr_props(instance_ptr: *mut c_void, device_id: 
                     set_prop(ControllerTypeString, "oculus_touch");
                     set_prop(InputProfilePathString, "{oculus}/input/touch_profile.json");
                     set_oculus_common_props();
+                }
+                ControllersEmulationMode::YvrTouch => {
+                    let yvr_model = yvr_device_model();
+                    // YVR2 (D3) has a different controller geometry than YVR1 (D1).
+                    let (render_model_left, render_model_right) = if yvr_model == "YVR2" {
+                        (
+                            "{alvr_server}/rendermodels/yvr_d3_left_controller",
+                            "{alvr_server}/rendermodels/yvr_d3_right_controller",
+                        )
+                    } else {
+                        (
+                            "{alvr_server}/rendermodels/yvr_d1_left_controller",
+                            "{alvr_server}/rendermodels/yvr_d1_right_controller",
+                        )
+                    };
+                    set_prop(TrackingSystemNameString, "yvr");
+                    set_prop(ManufacturerNameString, "YVR");
+                    if left_hand {
+                        set_prop(
+                            ModelNumberString,
+                            format!("{yvr_model} Controller (Left)").as_str(),
+                        );
+                        set_prop(RenderModelNameString, render_model_left);
+                        set_prop(
+                            RegisteredDeviceTypeString,
+                            format!("yvr/{yvr_model}_Controller_Left").as_str(),
+                        );
+                        set_icons("{oculus}/icons/rifts_left_controller");
+                    } else if right_hand {
+                        set_prop(
+                            ModelNumberString,
+                            format!("{yvr_model} Controller (Right)").as_str(),
+                        );
+                        set_prop(RenderModelNameString, render_model_right);
+                        set_prop(
+                            RegisteredDeviceTypeString,
+                            format!("yvr/{yvr_model}_Controller_Right").as_str(),
+                        );
+                        set_icons("{oculus}/icons/rifts_right_controller");
+                    }
+                    // Keep Oculus Touch button layout so existing games and the
+                    // SteamVR action manifest keep working with the YVR controllers.
+                    set_prop(ControllerTypeString, "oculus_touch");
+                    set_prop(InputProfilePathString, "{oculus}/input/touch_profile.json");
                 }
                 ControllersEmulationMode::Quest3Plus => {
                     set_prop(ManufacturerNameString, "Meta");

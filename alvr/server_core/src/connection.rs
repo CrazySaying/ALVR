@@ -21,9 +21,10 @@ use alvr_events::{AdbEvent, ButtonEvent, EventType};
 use alvr_packets::{
     AUDIO, ClientConnectionResult, ClientConnectionsAction, ClientControlPacket,
     ClientNegotiatedStreamingConfig, ClientStatistics, HAPTICS, NegotiatedStreamingConfigExt,
-    RealTimeConfig, STATISTICS, ServerControlPacket, StreamConfigPacket, TRACKING, TrackingData,
-    VIDEO, VideoPacketHeader,
+    PathValuePair, RealTimeConfig, STATISTICS, ServerControlPacket, StreamConfigPacket, TRACKING,
+    TrackingData, VIDEO, VideoPacketHeader, parse_path,
 };
+use alvr_server_io::ServerSessionManager;
 use alvr_session::{
     BodyTrackingSinkConfig, CodecType, ControllersEmulationMode, FrameSize, H264Profile, Settings,
     SocketProtocol, SteamvrHmdInitConfig,
@@ -66,6 +67,69 @@ fn is_streaming(client_hostname: &str) -> bool {
         .is_some_and(|c| c.connection_state == ConnectionState::Streaming)
 }
 
+// Auto-apply the YVR device preset when a YVR/PFDM headset connects. This mirrors
+// the official YVR app: per-device emulation mode, controller pose offsets and
+// render models (D1/D3), written into session.json so SteamVR picks them up.
+//
+// The controller rotation offset (25° around X) is the YVR controller's physical
+// orientation calibration relative to the Oculus Touch pose.
+fn apply_device_preset(
+    session_manager_lock: &mut parking_lot::RwLockWriteGuard<'_, ServerSessionManager>,
+    platform_string: &str,
+    device_model: &str,
+) {
+    let lower_model = device_model.to_lowercase();
+    let is_yvr = platform_string.starts_with("YVR")
+        || platform_string.starts_with("Play For Dream")
+        || lower_model.contains("yvr")
+        || lower_model.contains("pfdm");
+    if !is_yvr {
+        return;
+    }
+
+    // Canonical model used for OpenVR identity and render model selection.
+    let model = if lower_model.contains("yvr2") || lower_model.contains("d3") {
+        "YVR2"
+    } else if lower_model.contains("yvr1") || lower_model.contains("d1") {
+        "YVR1"
+    } else {
+        "YVR"
+    };
+
+    let values = vec![
+        PathValuePair {
+            path: parse_path("session_settings.headset.emulation_mode.variant"),
+            value: serde_json::json!("Yvr"),
+        },
+        PathValuePair {
+            path: parse_path(
+                "session_settings.headset.controllers.content.emulation_mode.variant",
+            ),
+            value: serde_json::json!("YvrTouch"),
+        },
+        PathValuePair {
+            path: parse_path(
+                "session_settings.headset.controllers.content.left_controller_position_offset",
+            ),
+            value: serde_json::json!([0.0, 0.0, 0.0]),
+        },
+        PathValuePair {
+            path: parse_path(
+                "session_settings.headset.controllers.content.left_controller_rotation_offset",
+            ),
+            value: serde_json::json!([25.0, 0.0, 0.0]),
+        },
+        PathValuePair {
+            path: parse_path("session_settings.headset.device_model"),
+            value: serde_json::json!(model),
+        },
+    ];
+
+    if session_manager_lock.set_session_values(values).is_err() {
+        warn!("Failed to apply YVR device preset");
+    }
+}
+
 // Compute a hash over all steamvr-restart settings and client-negotiated values.
 // The small SteamvrHmdInitConfig carries the negotiated resolution/fps; everything else comes from
 // Settings directly, using the same derivation as the old full SteamvrHmdInitConfig did.
@@ -90,6 +154,7 @@ pub fn compute_restart_settings_hash(
             ControllersEmulationMode::ViveWand => 40,
             ControllersEmulationMode::ViveTracker => 41,
             ControllersEmulationMode::PSVR2Sense => 60,
+            ControllersEmulationMode::YvrTouch => 70,
             ControllersEmulationMode::Custom { .. } => 500,
         };
         use_separate_hand_trackers = config
@@ -554,10 +619,16 @@ fn connection_pipeline(
 
     let maybe_streaming_caps =
         if let ClientConnectionResult::ConnectionAccepted(info) = connection_result {
+            // Clone before `info.platform_string` is moved into SetDisplayName.
+            let platform_string = info.platform_string.clone();
+            let device_model = info.device_model.clone();
             session_manager_lock.update_client_connections(
                 client_hostname.clone(),
                 ClientConnectionsAction::SetDisplayName(info.platform_string),
             );
+
+            // Auto-apply the YVR device preset when a YVR/PFDM headset connects.
+            apply_device_preset(&mut session_manager_lock, &platform_string, &device_model);
 
             if info.client_protocol_id != alvr_common::protocol_id_u64() {
                 warn!(
